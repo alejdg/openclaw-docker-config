@@ -2,7 +2,7 @@
   "gateway": {
     "mode": "local",
     "port": 18789,
-    "auth":{
+    "auth": {
       "allowTailscale": true
     },
     "controlUi": {
@@ -17,13 +17,11 @@
   "channels": {
     "telegram": {
       "enabled": true,
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "pairing",
       "groupPolicy": "allowlist",
       "streamMode": "partial"
     }
   },
-
   "plugins": {
     "entries": {
       "telegram": {
@@ -31,7 +29,6 @@
       }
     }
   },
-
   "models": {
     "mode": "merge",
     "providers": {
@@ -72,6 +69,10 @@
       }
     }
   },
+  "tools": {
+    "profile": "coding",
+    "deny": ["group:automation", "group:nodes", "gateway"]
+  },
   "agents": {
     "defaults": {
       "model": {
@@ -87,35 +88,62 @@
       "maxConcurrent": 2,
       "subagents": {
         "maxConcurrent": 4
+      },
+      "sandbox": {
+        "mode": "off"
       }
     },
     "list": [
       {
-        "id": "main"
+        "id": "main",
+        "tools": {
+          "allow": ["*"]
+        }
       },
       {
         "id": "ale-s-assistant",
         "name": "ale-s-assistant",
         "workspace": "/home/node/.openclaw/workspace/ale",
-        "agentDir": "/home/node/.openclaw/agents/ale-assistant/agent"
+        "agentDir": "/home/node/.openclaw/agents/ale-assistant/agent",
+        "tools": {
+          "allow": ["group:fs", "group:web", "group:ui", "group:memory", "group:sessions"],
+          "deny": ["group:runtime", "group:automation", "group:nodes", "gateway"]
+        }
       },
       {
         "id": "jordan-s-assistant",
         "name": "jordan-s-assistant",
         "workspace": "/home/node/.openclaw/workspace/jordan",
-        "agentDir": "/home/node/.openclaw/agents/jordan-assistant/agent"
+        "agentDir": "/home/node/.openclaw/agents/jordan-assistant/agent",
+        "tools": {
+          "allow": ["group:fs", "group:web", "group:ui", "group:memory", "group:sessions"],
+          "deny": ["group:runtime", "group:automation", "group:nodes", "gateway"]
+        }
       }
     ]
   },
+  "bindings": [
+    {
+      "agentId": "ale-s-assistant",
+      "match": {
+        "channel": "telegram"
+      }
+    },
+    {
+      "agentId": "jordan-s-assistant",
+      "match": {
+        "channel": "telegram"
+      }
+    }
+  ],
   "commands": {
     "native": "auto",
-    "nativeSkills": "auto"
+    "nativeSkills": "auto",
+    "restart": true
   },
-
   "messages": {
     "ackReactionScope": "group-mentions"
   },
-
   "auth": {
     "profiles": {
       "anthropic:manual": {
@@ -127,7 +155,6 @@
       "anthropic": ["anthropic:manual"]
     }
   },
-
   "logging": {
     "level": "info",
     "consoleLevel": "info",
