@@ -13,8 +13,13 @@ services:
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
       OPENCLAW_GATEWAY_BIND: ${OPENCLAW_GATEWAY_BIND:-0.0.0.0}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TRACE_TELEGRAM_BOT_TOKEN: ${TRACE_TELEGRAM_BOT_TOKEN}
+      SERENITY_TELEGRAM_BOT_TOKEN: ${SERENITY_TELEGRAM_BOT_TOKEN}
+      COACH_TELEGRAM_BOT_TOKEN: ${COACH_TELEGRAM_BOT_TOKEN}
+      GUARDIAN_TELEGRAM_BOT_TOKEN: ${GUARDIAN_TELEGRAM_BOT_TOKEN}
       BRAVE_API_KEY: ${BRAVE_API_KEY}
       GH_TOKEN: ${GH_TOKEN:-}
+      XDG_RUNTIME_DIR: /run/user/$(id -u)
     volumes:
       - ${OPENCLAW_CONFIG_DIR:-/home/openclaw/.openclaw}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR:-/home/openclaw/.openclaw/workspace}:/home/node/.openclaw/workspace
@@ -22,31 +27,17 @@ services:
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
     command: openclaw gateway --bind lan --port 18789
 
-  workspace-sync-ale:
+  workspace-sync:
     image: ghcr.io/${GHCR_USERNAME}/openclaw-docker-config/workspace-sync:latest
     restart: unless-stopped
     environment:
-      GIT_WORKSPACE_REPO: ${GIT_WORKSPACE_REPO_ALE:-}
+      GIT_WORKSPACE_REPO: ${GIT_WORKSPACE_REPO:-}
       GIT_WORKSPACE_REMOTE: ${GIT_WORKSPACE_REMOTE:-}
       GIT_WORKSPACE_BRANCH: ${GIT_WORKSPACE_BRANCH:-auto}
-      GIT_WORKSPACE_TOKEN: ${GIT_WORKSPACE_TOKEN_ALE:-}
+      GIT_WORKSPACE_TOKEN: ${GIT_WORKSPACE_TOKEN:-}
       GIT_WORKSPACE_SYNC_SCHEDULE: ${GIT_WORKSPACE_SYNC_SCHEDULE:-0 4 * * *}
     volumes:
-      - ${OPENCLAW_WORKSPACE_DIR:-/home/openclaw/.openclaw/workspace}/ale:/workspace
-    profiles:
-      - sync
-
-  workspace-sync-jordan:
-    image: ghcr.io/${GHCR_USERNAME}/openclaw-docker-config/workspace-sync:latest
-    restart: unless-stopped
-    environment:
-      GIT_WORKSPACE_REPO: ${GIT_WORKSPACE_REPO_JORDAN:-}
-      GIT_WORKSPACE_REMOTE: ${GIT_WORKSPACE_REMOTE:-}
-      GIT_WORKSPACE_BRANCH: ${GIT_WORKSPACE_BRANCH:-auto}
-      GIT_WORKSPACE_TOKEN: ${GIT_WORKSPACE_TOKEN_JORDAN:-}
-      GIT_WORKSPACE_SYNC_SCHEDULE: ${GIT_WORKSPACE_SYNC_SCHEDULE:-0 4 * * *}
-    volumes:
-      - ${OPENCLAW_WORKSPACE_DIR:-/home/openclaw/.openclaw/workspace}/jordan:/workspace
+      - ${OPENCLAW_WORKSPACE_DIR:-/home/openclaw/.openclaw/workspace}:/workspace
     profiles:
       - sync
 
@@ -67,3 +58,21 @@ services:
   #     - ${OPENCLAW_WORKSPACE_DIR:-/home/openclaw/.openclaw/workspace}/second:/workspace
   #   profiles:
   #     - sync
+
+  obsidian-sync:
+    image: ghcr.io/${GHCR_USERNAME}/openclaw-docker-config/workspace-sync:latest
+    restart: unless-stopped
+    environment:
+      GIT_OBSIDIAN_REPO: ${GIT_OBSIDIAN_REPO:-}
+      GIT_OBSIDIAN_REMOTE: ${GIT_OBSIDIAN_REMOTE:-}
+      GIT_OBSIDIAN_BRANCH: ${GIT_OBSIDIAN_BRANCH:-main}
+      GIT_OBSIDIAN_TOKEN: ${GIT_OBSIDIAN_TOKEN:-}
+      OBSIDIAN_SYNC_MODE: ${OBSIDIAN_SYNC_MODE:-sync}
+      OBSIDIAN_SYNC_SCHEDULE: ${OBSIDIAN_SYNC_SCHEDULE:-0 4 * * *}
+    volumes:
+      - type: bind
+        source: ${OBSIDIAN_VAULT_DIR:-/home/openclaw/obsidian-vault}
+        target: /vault
+    entrypoint: ["/usr/local/bin/obsidian-entrypoint.sh"]
+    profiles:
+      - obsidian
