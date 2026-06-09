@@ -5,3 +5,5 @@ credentials/
 sessions/
 node_modules/
 .DS_Store
+config/openclaw.json
+openclaw-configs*
